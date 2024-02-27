@@ -77,22 +77,13 @@ def load_config():
         file_config = yaml.safe_load(file)
     config = {**default_config, **file_config}
 
-class ConfigFileHandler(FileSystemEventHandler):
+class ConfigFileChangeMonitor(FileSystemEventHandler):
     def dispatch(event):
         if(event.event_type != "modified"):
             return
         print("Config File Modified, Reloading...")
         load_config()
 
-# Load the config file
-load_config()
-# Monitor the config file for changes
-ob = Observer()
-ob.schedule(ConfigFileHandler, os.path.dirname(CONFIG_FILE), recursive=False)
-ob.start()
-
-# View Config File
-subprocess.Popen(['notepad.exe', CONFIG_FILE], creationflags=subprocess.CREATE_NO_WINDOW | subprocess.DETACHED_PROCESS)
 
 # Play KeyStrokes
 def play_keys(stratagem):
@@ -117,23 +108,38 @@ def play_keys(stratagem):
     
     keyboard.release('ctrl')
 
+# Load the config file
+load_config()
+
+# Monitor the config file for changes
+ob = Observer()
+ob.schedule(ConfigFileChangeMonitor, os.path.dirname(CONFIG_FILE), recursive=False)
+ob.start()
+
+# View Config File
+subprocess.Popen(['notepad.exe', CONFIG_FILE], creationflags=subprocess.CREATE_NO_WINDOW | subprocess.DETACHED_PROCESS)
+
+# Left Trigger is Held Down?
 ltriggerPulled = False
 
+# Application Logic
 while True:
+
 
     try:
         gamepad = inputs.devices.gamepads[0]
-    except:
-        print("No gamepad found.")
+    except: # Check if GamePad is connected.
+        print("No gamepad found. Connect a gamepad and restart the application.")
         exit()
 
     try:
         events = gamepad.read()
-    except KeyboardInterrupt:
+    except KeyboardInterrupt: # Allow Control+C to exit the application
         ob.stop()
         print("Exiting...")
         exit()
 
+    # Events were found and can be iterated over now.
     for event in events:
         if(event.ev_type == "Sync"):
             continue
