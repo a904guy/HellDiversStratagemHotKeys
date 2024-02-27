@@ -14,14 +14,14 @@ stratagems = {
     "Flamethrower": "S, A, W, S, W",
     "Autocannon": "S, D, A, S, S, W, W, D",
     "Railgun": "S, D, A, S, S, W, A, S, D",
-    "Spear": "",
+    "Spear": "S, S, W, S, S",
     "Orbital Gatling Barrage": "D, S, A, W, W",
-    "Orbital Airburst Strike": "",
+    "Orbital Airburst Strike": "D, D, D",
     "Orbital 120MM HE Barrage": "D, S, S, A, S, D, S, S",
     "Orbital 380MM HE Barrage": "D, S, S, W, W, A, S, S, S",
-    "Orbital Walking Barrage": "",
-    "Orbital Laser Strike": "",
-    "Orbital Railcannon Strike": "",
+    "Orbital Walking Barrage": "D, D, S, A, D, S",
+    "Orbital Laser Strike": "D, S, W, D, S",
+    "Orbital Railcannon Strike": "D, W, S, S, D",
     "Eagle Strafing Run": "W, D, D",
     "Eagle Airstrike": "W, D, S, D",
     "Eagle Cluster Bomb": "W, D, S, S, D, S",
@@ -31,12 +31,12 @@ stratagems = {
     "Eagle 110MM Rocket Pods": "W, D, W, A",
     "Eagle 500KG Bomb": "W, D, S, S, S",
     "Orbital Precision Strike": "A, A, W",
-    "Orbital Gas Strike": "",
-    "Orbital EMS Strike": "",
-    "Orbital Smoke Strike": "",
-    "HMG Emplacement": "",
+    "Orbital Gas Strike": "D, D, W",
+    "Orbital EMS Strike": "D, D, S, D",
+    "Orbital Smoke Strike": "D, D, S, W",
+    "HMG Emplacement": "S, W, A, D, D, A",
     "Shield Generator Relay": "S, W, A, D, A, S",
-    "Tesla Tower": "",
+    "Tesla Tower": "S, W, D, W, A, D",
     "Anti-Personnel Minefield": "S, A, S, W, D",
     "Supply Pack": "S, A, S, W, W, S",
     "Grenade Launcher": "S, A, S, W, A, S, S",
@@ -50,9 +50,10 @@ stratagems = {
     "Gatling Sentry": "S, W, D, A, S",
     "Mortar Sentry": "S, W, D, D, S",
     "Guard Dog": "S, W, A, S, W, D, S",
-    "Autocannon Sentry": "",
-    "Rocket Sentry": "",
+    "Autocannon Sentry": "S, W, D, W, A, W",
+    "Rocket Sentry": "S, W, D, D, A",
     "EMS Mortar Sentry": "S, S, W, W, A",
+    "None": "",
 }
 
 default_config = {
@@ -62,14 +63,22 @@ default_config = {
         'Left': "Gatling Sentry",
         'Right': "Mortar Sentry"
     },
+    "Left Button": "Machine Gun",
+    "Right Button": "Recoilless Rifle",
     "Right Trigger": "Reinforce",
+    "Buttons": {
+        "Y": "Anti-Material Rifle",
+        "B": "Stalwart",
+        "X": "Orbital Gatling Barrage",
+        "A": "Orbital Precision Strike"
+    }
 }
 
 if not os.path.isfile(CONFIG_FILE):
     with open(CONFIG_FILE, "w") as file:
         file.write("# Configuration file for Helldivers Stratagem Hotkeys.\n")
         yaml.dump(default_config, file)
-        file.write("\n# Avaiable Stratagems: {}".format('\n# '.join(stratagems.keys())))
+        file.write("\n# Avaiable Stratagems: \n# {}".format('\n# '.join(stratagems.keys())))
 
 def load_config():
     global config
@@ -125,7 +134,6 @@ ltriggerPulled = False
 # Application Logic
 while True:
 
-
     try:
         gamepad = inputs.devices.gamepads[0]
     except: # Check if GamePad is connected.
@@ -144,10 +152,10 @@ while True:
         if(event.ev_type == "Sync"):
             continue
 
-        if(event.code == "ABS_Z" and event.state > 0):
+        if(ltriggerPulled is False and event.code == "ABS_Z" and event.state > 0):
             ltriggerPulled = True
             print("Left trigger pulled")
-        if(event.code == "ABS_Z" and event.state == 0):
+        if(ltriggerPulled is True and event.code == "ABS_Z" and event.state == 0):
             ltriggerPulled = False
             print("Left trigger released")
 
@@ -170,4 +178,29 @@ while True:
             if(event.state == 1):
                 play_keys(config['DPad']['Down'])
                 print("Down DPad")
+        
+        if(ltriggerPulled and event.code == "BTN_TL" and event.state == 1):
+            play_keys(config['Left Button'])
+            print("Left Button")
+        
+        if(ltriggerPulled and event.code == "BTN_TR" and event.state == 1):
+            play_keys(config['Right Button'])
+            print("Right Button")
+        
+        if(ltriggerPulled and event.code == "BTN_NORTH" and event.state == 1):
+            play_keys(config['Buttons']['Y'])
+            print("Y Button")
+        
+        if(ltriggerPulled and event.code == "BTN_SOUTH" and event.state == 1):
+            play_keys(config['Buttons']['B'])
+            print("B Button")
+        
+        if(ltriggerPulled and event.code == "BTN_WEST" and event.state == 1):
+            play_keys(config['Buttons']['X'])
+            print("X Button")
+        
+        if(ltriggerPulled and event.code == "BTN_EAST" and event.state == 1):
+            play_keys(config['Buttons']['A'])
+            print("A Button")
+
 
