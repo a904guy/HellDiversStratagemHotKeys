@@ -173,8 +173,6 @@ while True:
         if(event.ev_type == "Sync"):
             continue
 
-        print(event.code)
-
         if(ltriggerPulled is False and event.code == "BTN_TL" and event.state == 1):
             ltriggerPulled = True
             print("Left trigger pulled")
