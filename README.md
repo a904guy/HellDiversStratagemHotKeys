@@ -54,7 +54,7 @@ Right Trigger: Reinforce
 To set a new combo you just copy the Stratagem's name from the list below (without the hashtag/pound sign #) onto the button you want it mapped to.
 Save the file and the application will reload the config file real time and you can begin using them immediately.
 
-# To use a combo.
+# To use
 Simply hold down the left button above the left trigger. Then press the button in the config. The combo will be entered and you can then throw the beacon wherever you like.
 
 Enjoy!
