@@ -1,10 +1,12 @@
-import inputs, keyboard, yaml, os, subprocess, threading, time
+import inputs, yaml, os, subprocess, threading, time
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 CONFIG_FILE = "./config.yaml"
 
 stratagems = {
+    "SOS Beacon": "S, W, D, W",
+    "Resupply": "S, S, W, D",
     "Reinforce": "W, S, D, A, W",
     "Machine Gun": "S, A, S, W, D",
     "Anti-Material Rifle": "S, A, D, W, S",
@@ -42,17 +44,18 @@ stratagems = {
     "Grenade Launcher": "S, A, S, W, A, S, S",
     "Laser Cannon": "S, A, S, W, A",
     "Incendiary Mines": "S, A, A, S",
-    "Guard Dog Rover": "S, A, S, W, A, S, S",
+    "Guard Dog Rover": "S, W, A, W, D, D",
     "Ballistic Shield Backpack": "S, A, W, W, D",
     "Arc Thrower": "S, D, W, A, S",
     "Shield Generator Pack": "S, W, A, S, D, D",
-    "Machine Gun Sentry": "S, W, D, S, D, S, W",
+    "Machine Gun Sentry": "S, W, D, D, W",
     "Gatling Sentry": "S, W, D, A, S",
     "Mortar Sentry": "S, W, D, D, S",
     "Guard Dog": "S, W, A, S, W, D, S",
     "Autocannon Sentry": "S, W, D, W, A, W",
     "Rocket Sentry": "S, W, D, D, A",
     "EMS Mortar Sentry": "S, S, W, W, A",
+    "Hell Bomb": "S, W, A, S, W, D, S, W",
     "None": "",
 }
 
@@ -65,6 +68,7 @@ default_config = {
     },
     "Left Button": "Machine Gun",
     "Right Button": "Recoilless Rifle",
+    "Left Trigger": "Resupply",
     "Right Trigger": "Reinforce",
     "Buttons": {
         "Y": "Anti-Material Rifle",
@@ -74,16 +78,15 @@ default_config = {
     }
 }
 
-if not os.path.isfile(CONFIG_FILE):
-    with open(CONFIG_FILE, "w") as file:
-        file.write("# Configuration file for Helldivers Stratagem Hotkeys.\n")
-        yaml.dump(default_config, file)
-        file.write("\n# Avaiable Stratagems: \n# {}".format('\n# '.join(stratagems.keys())))
-
 def load_config():
     global config
     with open(CONFIG_FILE, "r") as file:
-        file_config = yaml.safe_load(file)
+        try:
+            file_config = yaml.safe_load(file)
+        except:
+            print("Error reading config file. Using default config.")
+            file_config = {}
+
     config = {**default_config, **file_config}
 
 class ConfigFileChangeMonitor(FileSystemEventHandler):
@@ -92,6 +95,26 @@ class ConfigFileChangeMonitor(FileSystemEventHandler):
             return
         print("Config File Modified, Reloading...")
         load_config()
+
+import vgamepad
+
+gamepad = vgamepad.VX360Gamepad()
+
+controller_keyMap = {
+    'ctrl': vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_SHOULDER,
+    'w': vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP,
+    'a': vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_LEFT,
+    's': vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN,
+    'd': vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_RIGHT
+}
+
+def keyDown(key):
+    gamepad.press_button(button=controller_keyMap[key])
+    gamepad.update()
+
+def keyUp(key):
+    gamepad.release_button(button=controller_keyMap[key])
+    gamepad.update()
 
 
 # Play KeyStrokes
@@ -107,15 +130,20 @@ def play_keys(stratagem):
         print("Stratagem has no keys to press... {}".format(stratagem))
         return # No keys to press
 
-    keyboard.press('ctrl')
-
-    print(keys)
     for key in keys:
-        keyboard.press(key)
-        keyboard.release(key)
-        time.sleep(0.001)
-    
-    keyboard.release('ctrl')
+        # print(key) 
+        keyDown(key)
+        time.sleep(0.01)
+        keyUp(key)
+        time.sleep(0.01)
+
+    gamepad.reset()
+
+if not os.path.isfile(CONFIG_FILE):
+    with open(CONFIG_FILE, "w") as file:
+        file.write("# Configuration file for Helldivers Stratagem Hotkeys.\n")
+        yaml.dump(default_config, file)
+        file.write("\n# Avaiable Stratagems: \n# {}".format('\n# '.join(stratagems.keys())))
 
 # Load the config file
 load_config()
@@ -135,13 +163,13 @@ ltriggerPulled = False
 while True:
 
     try:
-        gamepad = inputs.devices.gamepads[0]
+        listen_gamepad = inputs.devices.gamepads[0]
     except: # Check if GamePad is connected.
         print("No gamepad found. Connect a gamepad and restart the application.")
         exit()
 
     try:
-        events = gamepad.read()
+        events = listen_gamepad.read()
     except KeyboardInterrupt: # Allow Control+C to exit the application
         ob.stop()
         print("Exiting...")
@@ -152,55 +180,59 @@ while True:
         if(event.ev_type == "Sync"):
             continue
 
-        if(ltriggerPulled is False and event.code == "ABS_Z" and event.state > 0):
+        print(event.code)
+
+        if(ltriggerPulled is False and event.code == "BTN_TL" and event.state == 1):
             ltriggerPulled = True
             print("Left trigger pulled")
-        if(ltriggerPulled is True and event.code == "ABS_Z" and event.state == 0):
+        if(ltriggerPulled is True and event.code == "BTN_TL" and event.state == 0):
             ltriggerPulled = False
             print("Left trigger released")
 
-        if(ltriggerPulled and event.code == 'ABS_RZ' and event.state == 0):
-            play_keys(config['Right Trigger'])
-            print("Right Trigger")
+        if(ltriggerPulled and event.code == 'ABS_Z' and event.state == 0):
+            print("Left Trigger")
+            play_keys(config['Left Trigger'])
 
-        if(ltriggerPulled and event.code == "ABS_HAT0X"):
-            if(event.state == -1):
-                play_keys(config['DPad']['Left'])
-                print("Left DPad")
-            if(event.state == 1):
-                play_keys(config['DPad']['Right'])
-                print("Right DPad")
+        if(ltriggerPulled and event.code == 'ABS_RZ' and event.state == 0):
+            print("Right Trigger")
+            play_keys(config['Right Trigger'])
+
+        # Unable to use, will screw up the combo
+        # if(ltriggerPulled and event.code == "ABS_HAT0X"):
+        #     if(event.state == -1):
+        #         print("Left DPad")
+        #         play_keys(config['DPad']['Left'])
+                
+        #     if(event.state == 1):
+        #         print("Right DPad")
+        #         play_keys(config['DPad']['Right'])
         
-        if(ltriggerPulled and event.code == "ABS_HAT0Y"):
-            if(event.state == -1):
-                play_keys(config['DPad']['Up'])
-                print("Up DPad")
-            if(event.state == 1):
-                play_keys(config['DPad']['Down'])
-                print("Down DPad")
-        
-        if(ltriggerPulled and event.code == "BTN_TL" and event.state == 1):
-            play_keys(config['Left Button'])
-            print("Left Button")
+        # if(ltriggerPulled and event.code == "ABS_HAT0Y"):
+        #     if(event.state == -1):
+        #         print("Up DPad")
+        #         play_keys(config['DPad']['Up'])
+        #     if(event.state == 1):
+        #         print("Down DPad")
+        #         play_keys(config['DPad']['Down'])
         
         if(ltriggerPulled and event.code == "BTN_TR" and event.state == 1):
-            play_keys(config['Right Button'])
             print("Right Button")
+            play_keys(config['Right Button'])
         
         if(ltriggerPulled and event.code == "BTN_NORTH" and event.state == 1):
-            play_keys(config['Buttons']['Y'])
             print("Y Button")
+            play_keys(config['Buttons']['Y'])
         
         if(ltriggerPulled and event.code == "BTN_SOUTH" and event.state == 1):
-            play_keys(config['Buttons']['B'])
             print("B Button")
+            play_keys(config['Buttons']['B'])
         
         if(ltriggerPulled and event.code == "BTN_WEST" and event.state == 1):
-            play_keys(config['Buttons']['X'])
             print("X Button")
+            play_keys(config['Buttons']['X'])
         
         if(ltriggerPulled and event.code == "BTN_EAST" and event.state == 1):
-            play_keys(config['Buttons']['A'])
             print("A Button")
+            play_keys(config['Buttons']['A'])
 
 
