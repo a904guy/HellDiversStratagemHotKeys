@@ -150,7 +150,7 @@ ob.start()
 subprocess.Popen(['notepad.exe', CONFIG_FILE], creationflags=subprocess.CREATE_NO_WINDOW | subprocess.DETACHED_PROCESS)
 
 # Left Trigger is Held Down?
-ltriggerPulled = False
+lButtonHeld = False
 
 # Application Logic
 while True:
@@ -173,23 +173,23 @@ while True:
         if(event.ev_type == "Sync"):
             continue
 
-        if(ltriggerPulled is False and event.code == "BTN_TL" and event.state == 1):
-            ltriggerPulled = True
-            print("Left trigger pulled")
-        if(ltriggerPulled is True and event.code == "BTN_TL" and event.state == 0):
-            ltriggerPulled = False
-            print("Left trigger released")
+        if(lButtonHeld is False and event.code == "BTN_TL" and event.state == 1):
+            lButtonHeld = True
+            print("Left Button Pushed")
+        if(lButtonHeld is True and event.code == "BTN_TL" and event.state == 0):
+            lButtonHeld = False
+            print("Left Button Released")
 
-        if(ltriggerPulled and event.code == 'ABS_Z' and event.state == 0):
+        if(lButtonHeld and event.code == 'ABS_Z' and event.state == 0):
             print("Left Trigger")
             play_keys(config['Left Trigger'])
 
-        if(ltriggerPulled and event.code == 'ABS_RZ' and event.state == 0):
+        if(lButtonHeld and event.code == 'ABS_RZ' and event.state == 0):
             print("Right Trigger")
             play_keys(config['Right Trigger'])
 
         # Unable to use, will screw up the combo
-        # if(ltriggerPulled and event.code == "ABS_HAT0X"):
+        # if(lButtonHeld and event.code == "ABS_HAT0X"):
         #     if(event.state == -1):
         #         print("Left DPad")
         #         play_keys(config['DPad']['Left'])
@@ -198,7 +198,7 @@ while True:
         #         print("Right DPad")
         #         play_keys(config['DPad']['Right'])
         
-        # if(ltriggerPulled and event.code == "ABS_HAT0Y"):
+        # if(lButtonHeld and event.code == "ABS_HAT0Y"):
         #     if(event.state == -1):
         #         print("Up DPad")
         #         play_keys(config['DPad']['Up'])
@@ -206,23 +206,23 @@ while True:
         #         print("Down DPad")
         #         play_keys(config['DPad']['Down'])
         
-        if(ltriggerPulled and event.code == "BTN_TR" and event.state == 1):
+        if(lButtonHeld and event.code == "BTN_TR" and event.state == 1):
             print("Right Button")
             play_keys(config['Right Button'])
         
-        if(ltriggerPulled and event.code == "BTN_NORTH" and event.state == 1):
+        if(lButtonHeld and event.code == "BTN_NORTH" and event.state == 1):
             print("Y Button")
             play_keys(config['Buttons']['Y'])
         
-        if(ltriggerPulled and event.code == "BTN_SOUTH" and event.state == 1):
+        if(lButtonHeld and event.code == "BTN_SOUTH" and event.state == 1):
             print("B Button")
             play_keys(config['Buttons']['B'])
         
-        if(ltriggerPulled and event.code == "BTN_WEST" and event.state == 1):
+        if(lButtonHeld and event.code == "BTN_WEST" and event.state == 1):
             print("X Button")
             play_keys(config['Buttons']['X'])
         
-        if(ltriggerPulled and event.code == "BTN_EAST" and event.state == 1):
+        if(lButtonHeld and event.code == "BTN_EAST" and event.state == 1):
             print("A Button")
             play_keys(config['Buttons']['A'])
 
