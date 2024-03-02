@@ -60,9 +60,8 @@ stratagems = {
 }
 
 default_config = {
-    "Left Button": "Machine Gun",
     "Right Button": "Recoilless Rifle",
-    "Left Trigger": "Resupply",
+    "Left Trigger": "SOS Beacon",
     "Right Trigger": "Reinforce",
     "Buttons": {
         "Y": "Anti-Material Rifle",
