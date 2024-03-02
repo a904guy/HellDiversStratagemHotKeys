@@ -60,12 +60,6 @@ stratagems = {
 }
 
 default_config = {
-    'DPad': {
-        'Up': "Autocannon Sentry",
-        'Down': "Guard Dog Rover",
-        'Left': "Gatling Sentry",
-        'Right': "Mortar Sentry"
-    },
     "Left Button": "Machine Gun",
     "Right Button": "Recoilless Rifle",
     "Left Trigger": "Resupply",
