@@ -17,8 +17,8 @@ python.exe -m pip install -r packages.list
 # To run
 You'll need to run just one of the command lines below. Again I supply multiple because depending on your python install some may not work. You only need to run one command successfully for the application to run.
 ```
-python app.y
-python.exe app.y
+python app.py
+python.exe app.py
 ```
 
 When you launch the application it will open Notepad, and it will open the config file for the application. The application file will be full of information on setting it up, and list all the Stratagems for usage.
