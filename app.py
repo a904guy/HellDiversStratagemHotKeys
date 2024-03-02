@@ -2,6 +2,18 @@ import inputs, yaml, os, subprocess, threading, time
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
+import vgamepad
+
+gamepad = vgamepad.VX360Gamepad()
+
+controller_keyMap = {
+    'ctrl': vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_SHOULDER,
+    'w': vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP,
+    'a': vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_LEFT,
+    's': vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN,
+    'd': vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_RIGHT
+}
+
 CONFIG_FILE = "./config.yaml"
 
 stratagems = {
@@ -89,18 +101,6 @@ class ConfigFileChangeMonitor(FileSystemEventHandler):
         print("Config File Modified, Reloading...")
         load_config()
 
-import vgamepad
-
-gamepad = vgamepad.VX360Gamepad()
-
-controller_keyMap = {
-    'ctrl': vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_LEFT_SHOULDER,
-    'w': vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_UP,
-    'a': vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_LEFT,
-    's': vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_DOWN,
-    'd': vgamepad.XUSB_BUTTON.XUSB_GAMEPAD_DPAD_RIGHT
-}
-
 def keyDown(key):
     gamepad.press_button(button=controller_keyMap[key])
     gamepad.update()
@@ -130,100 +130,101 @@ def play_keys(stratagem):
         keyUp(key)
         time.sleep(0.01)
 
-    gamepad.reset()
+if __name__ == "__main__":
 
-if not os.path.isfile(CONFIG_FILE):
-    with open(CONFIG_FILE, "w") as file:
-        file.write("# Configuration file for Helldivers Stratagem Hotkeys.\n")
-        yaml.dump(default_config, file)
-        file.write("\n# Avaiable Stratagems: \n# {}".format('\n# '.join(stratagems.keys())))
+    # Create the config file if it doesn't exist
+    if not os.path.isfile(CONFIG_FILE):
+        with open(CONFIG_FILE, "w") as file:
+            file.write("# Configuration file for Helldivers Stratagem Hotkeys.\n")
+            yaml.dump(default_config, file)
+            file.write("\n# Avaiable Stratagems: \n# {}".format('\n# '.join(stratagems.keys())))
 
-# Load the config file
-load_config()
+    # Load the config file
+    load_config()
 
-# Monitor the config file for changes
-ob = Observer()
-ob.schedule(ConfigFileChangeMonitor, os.path.dirname(CONFIG_FILE), recursive=False)
-ob.start()
+    # Monitor the config file for changes
+    ob = Observer()
+    ob.schedule(ConfigFileChangeMonitor, os.path.dirname(CONFIG_FILE), recursive=False)
+    ob.start()
 
-# View Config File
-subprocess.Popen(['notepad.exe', CONFIG_FILE], creationflags=subprocess.CREATE_NO_WINDOW | subprocess.DETACHED_PROCESS)
+    # View Config File
+    subprocess.Popen(['notepad.exe', CONFIG_FILE], creationflags=subprocess.CREATE_NO_WINDOW | subprocess.DETACHED_PROCESS)
 
-# Left Trigger is Held Down?
-lButtonHeld = False
+    # Left Trigger is Held Down?
+    lButtonHeld = False
 
-# Application Logic
-while True:
+    # Application Logic
+    while True:
 
-    try:
-        listen_gamepad = inputs.devices.gamepads[0]
-    except: # Check if GamePad is connected.
-        print("No gamepad found. Connect a gamepad and restart the application.")
-        exit()
+        try:
+            listen_gamepad = inputs.devices.gamepads[0]
+        except: # Check if GamePad is connected.
+            print("No gamepad found. Connect a gamepad and restart the application.")
+            exit()
 
-    try:
-        events = listen_gamepad.read()
-    except KeyboardInterrupt: # Allow Control+C to exit the application
-        ob.stop()
-        print("Exiting...")
-        exit()
+        try:
+            events = listen_gamepad.read()
+        except KeyboardInterrupt: # Allow Control+C to exit the application
+            ob.stop()
+            print("Exiting...")
+            exit()
 
-    # Events were found and can be iterated over now.
-    for event in events:
-        if(event.ev_type == "Sync"):
-            continue
+        # Events were found and can be iterated over now.
+        for event in events:
+            if(event.ev_type == "Sync"):
+                continue
 
-        if(lButtonHeld is False and event.code == "BTN_TL" and event.state == 1):
-            lButtonHeld = True
-            print("Left Button Pushed")
-        if(lButtonHeld is True and event.code == "BTN_TL" and event.state == 0):
-            lButtonHeld = False
-            print("Left Button Released")
+            if(lButtonHeld is False and event.code == "BTN_TL" and event.state == 1):
+                lButtonHeld = True
+                print("Left Button Pushed")
+            if(lButtonHeld is True and event.code == "BTN_TL" and event.state == 0):
+                lButtonHeld = False
+                print("Left Button Released")
 
-        if(lButtonHeld and event.code == 'ABS_Z' and event.state == 0):
-            print("Left Trigger")
-            play_keys(config['Left Trigger'])
+            if(lButtonHeld and event.code == 'ABS_Z' and event.state == 0):
+                print("Left Trigger")
+                play_keys(config['Left Trigger'])
 
-        if(lButtonHeld and event.code == 'ABS_RZ' and event.state == 0):
-            print("Right Trigger")
-            play_keys(config['Right Trigger'])
+            if(lButtonHeld and event.code == 'ABS_RZ' and event.state == 0):
+                print("Right Trigger")
+                play_keys(config['Right Trigger'])
 
-        # Unable to use, will screw up the combo
-        # if(lButtonHeld and event.code == "ABS_HAT0X"):
-        #     if(event.state == -1):
-        #         print("Left DPad")
-        #         play_keys(config['DPad']['Left'])
-                
-        #     if(event.state == 1):
-        #         print("Right DPad")
-        #         play_keys(config['DPad']['Right'])
-        
-        # if(lButtonHeld and event.code == "ABS_HAT0Y"):
-        #     if(event.state == -1):
-        #         print("Up DPad")
-        #         play_keys(config['DPad']['Up'])
-        #     if(event.state == 1):
-        #         print("Down DPad")
-        #         play_keys(config['DPad']['Down'])
-        
-        if(lButtonHeld and event.code == "BTN_TR" and event.state == 1):
-            print("Right Button")
-            play_keys(config['Right Button'])
-        
-        if(lButtonHeld and event.code == "BTN_NORTH" and event.state == 1):
-            print("Y Button")
-            play_keys(config['Buttons']['Y'])
-        
-        if(lButtonHeld and event.code == "BTN_SOUTH" and event.state == 1):
-            print("B Button")
-            play_keys(config['Buttons']['B'])
-        
-        if(lButtonHeld and event.code == "BTN_WEST" and event.state == 1):
-            print("X Button")
-            play_keys(config['Buttons']['X'])
-        
-        if(lButtonHeld and event.code == "BTN_EAST" and event.state == 1):
-            print("A Button")
-            play_keys(config['Buttons']['A'])
+            # Unable to use, will screw up the combo
+            # if(lButtonHeld and event.code == "ABS_HAT0X"):
+            #     if(event.state == -1):
+            #         print("Left DPad")
+            #         play_keys(config['DPad']['Left'])
+                    
+            #     if(event.state == 1):
+            #         print("Right DPad")
+            #         play_keys(config['DPad']['Right'])
+            
+            # if(lButtonHeld and event.code == "ABS_HAT0Y"):
+            #     if(event.state == -1):
+            #         print("Up DPad")
+            #         play_keys(config['DPad']['Up'])
+            #     if(event.state == 1):
+            #         print("Down DPad")
+            #         play_keys(config['DPad']['Down'])
+            
+            if(lButtonHeld and event.code == "BTN_TR" and event.state == 1):
+                print("Right Button")
+                play_keys(config['Right Button'])
+            
+            if(lButtonHeld and event.code == "BTN_NORTH" and event.state == 1):
+                print("Y Button")
+                play_keys(config['Buttons']['Y'])
+            
+            if(lButtonHeld and event.code == "BTN_SOUTH" and event.state == 1):
+                print("B Button")
+                play_keys(config['Buttons']['A'])
+            
+            if(lButtonHeld and event.code == "BTN_WEST" and event.state == 1):
+                print("X Button")
+                play_keys(config['Buttons']['X'])
+            
+            if(lButtonHeld and event.code == "BTN_EAST" and event.state == 1):
+                print("A Button")
+                play_keys(config['Buttons']['B'])
 
 
