@@ -126,9 +126,11 @@ def play_keys(stratagem):
     for key in keys:
         # print(key) 
         keyDown(key)
-        time.sleep(0.01)
+        time.sleep(0.025)
         keyUp(key)
-        time.sleep(0.01)
+        time.sleep(0.025)
+
+    # gamepad.reset()
 
 if __name__ == "__main__":
 
