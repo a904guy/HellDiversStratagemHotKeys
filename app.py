@@ -26,7 +26,7 @@ stratagems = {
     "Expendable Anti-Tank": "S, S, A, W, D",
     "Recoilless Rifle": "S, A, D, D, A",
     "Flamethrower": "S, A, W, S, W",
-    "Autocannon": "S, D, A, S, S, W, W, D",
+    "Autocannon": "S, A, S, W, W, D",
     "Railgun": "S, D, A, S, S, W, A, S, D",
     "Spear": "S, S, W, S, S",
     "Orbital Gatling Barrage": "D, S, A, W, W",
@@ -140,6 +140,9 @@ if __name__ == "__main__":
             file.write("# Configuration file for Helldivers Stratagem Hotkeys.\n")
             yaml.dump(default_config, file)
             file.write("\n# Avaiable Stratagems: \n# {}".format('\n# '.join(stratagems.keys())))
+        
+        # View Config File
+        subprocess.Popen(['notepad.exe', CONFIG_FILE], creationflags=subprocess.CREATE_NO_WINDOW | subprocess.DETACHED_PROCESS)
 
     # Load the config file
     load_config()
@@ -148,9 +151,6 @@ if __name__ == "__main__":
     ob = Observer()
     ob.schedule(ConfigFileChangeMonitor, os.path.dirname(CONFIG_FILE), recursive=False)
     ob.start()
-
-    # View Config File
-    subprocess.Popen(['notepad.exe', CONFIG_FILE], creationflags=subprocess.CREATE_NO_WINDOW | subprocess.DETACHED_PROCESS)
 
     # Left Trigger is Held Down?
     lButtonHeld = False
