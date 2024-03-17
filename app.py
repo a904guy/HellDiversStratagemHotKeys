@@ -32,7 +32,7 @@ stratagems = {
     "Orbital Gatling Barrage": "D, S, A, W, W",
     "Orbital Airburst Strike": "D, D, D",
     "Orbital 120MM HE Barrage": "D, S, S, A, S, D, S, S",
-    "Orbital 380MM HE Barrage": "D, S, S, W, W, A, S, S, S",
+    "Orbital 380MM HE Barrage": "D, S, W, W, A, S, S",
     "Orbital Walking Barrage": "D, D, S, A, D, S",
     "Orbital Laser Strike": "D, S, W, D, S",
     "Orbital Railcannon Strike": "D, W, S, S, D",
