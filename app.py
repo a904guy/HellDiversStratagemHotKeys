@@ -8,7 +8,7 @@ def install(package):
         from pip._internal.main import main as pip_main
         pip_main(['install', package])
 
-import inputs, yaml, os, subprocess, threading, time
+import inputs, yaml, os, subprocess, time
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
