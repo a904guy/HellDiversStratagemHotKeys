@@ -1,8 +1,22 @@
+import pip
+
+def install(package):
+    if hasattr(pip, 'main'):
+        pip.main(['install', package])
+    else:
+        # pip 10.0.0 or later
+        from pip._internal.main import main as pip_main
+        pip_main(['install', package])
+
 import inputs, yaml, os, subprocess, threading, time
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-import vgamepad
+try:
+    import vgamepad
+except ImportError:
+    install('vgamepad')
+    import vgamepad
 
 gamepad = vgamepad.VX360Gamepad()
 
@@ -195,3 +209,4 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             print("Exiting...")
             exit()
+        time.sleep(0.01)
